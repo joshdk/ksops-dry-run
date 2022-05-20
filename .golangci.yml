@@ -1,0 +1,12 @@
+linters:
+  enable-all: true
+  disable:
+    - cyclop
+    - funlen
+    - goerr113
+    - gosec
+    - wrapcheck
+    - wsl
+
+issues:
+  exclude-use-default: true
