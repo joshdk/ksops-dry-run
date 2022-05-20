@@ -6,6 +6,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -25,7 +26,7 @@ type metadata struct {
 
 // common represents properties that are shared by all kubernetes resources.
 type common struct {
-	ApiVersion string   `yaml:"apiVersion"`
+	APIVersion string   `yaml:"apiVersion"`
 	Kind       string   `yaml:"kind"`
 	Metadata   metadata `yaml:"metadata"`
 }
@@ -130,10 +131,10 @@ func parseKsopsGenerator(body []byte) (*ksopsGeneratorConfig, error) {
 
 	// Sanity check the apiVersion and kind. This should never happen, as it
 	// would be the result of a ksops generator misconfiguration.
-	if config.ApiVersion != "viaduct.ai/v1" {
-		return nil, fmt.Errorf("expected ksops generator config apiVersion %q but got %q", "viaduct.ai/v1", config.ApiVersion)
+	if config.APIVersion != "viaduct.ai/v1" {
+		return nil, fmt.Errorf("expected ksops generator config apiVersion %q but got %q", "viaduct.ai/v1", config.APIVersion)
 	} else if config.Kind != "ksops" {
-		return nil, fmt.Errorf("expected ksops generator config kind %q but got %q", "ksops", config.ApiVersion)
+		return nil, fmt.Errorf("expected ksops generator config kind %q but got %q", "ksops", config.APIVersion)
 	}
 
 	return &config, nil
@@ -156,15 +157,16 @@ func parseKsopsEncryptedSecrets(filename string) ([]secret, error) {
 		var secret secret
 		if err := decoder.Decode(&secret); err != nil {
 			// No more yaml documents are left in the stream.
-			if err == io.EOF {
+			if errors.Is(err, io.EOF) {
 				break
 			}
+
 			return nil, err
 		}
 
 		// Sanity check the apiVersion and kind.
-		if secret.ApiVersion != "v1" {
-			return nil, fmt.Errorf("expected ksops encrypted secret apiVersion %q but got %q", "v1", secret.ApiVersion)
+		if secret.APIVersion != "v1" {
+			return nil, fmt.Errorf("expected ksops encrypted secret apiVersion %q but got %q", "v1", secret.APIVersion)
 		} else if secret.Kind != "Secret" {
 			return nil, fmt.Errorf("expected ksops encrypted secret kind %q but got %q", "Secret", secret.Kind)
 		}
