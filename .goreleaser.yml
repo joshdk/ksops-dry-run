@@ -1,0 +1,45 @@
+project_name: ksops-dry-run
+
+builds:
+  - id: ksops-dry-run
+    binary: ksops-dry-run
+
+    goos:
+      - darwin
+      - linux
+
+    goarch:
+      - amd64
+      - arm64
+
+    ignore:
+      - goos: linux
+        goarch: arm64
+
+    flags:
+      - -trimpath
+
+    ldflags:
+      - -s -w
+      - -buildid=
+
+    env:
+      - CGO_ENABLED=0
+
+    hooks:
+      post: upx --best --ultra-brute "{{ .Path }}"
+
+archives:
+  - id: ksops-dry-run
+    builds: [ksops-dry-run]
+    name_template: "{{ .ProjectName }}-{{ .Os }}-{{ .Arch }}"
+
+release:
+  name_template: "{{ .Tag }} Release"
+  prerelease: auto
+
+checksum:
+  name_template: "checksums.txt"
+
+changelog:
+  skip: true
