@@ -171,23 +171,37 @@ func parseKsopsEncryptedSecrets(filename string) ([]secret, error) {
 			return nil, fmt.Errorf("expected ksops encrypted secret kind %q but got %q", "Secret", secret.Kind)
 		}
 
-		// Take the combined set of keys from both data and stringData, and merge
-		// them into stringData with a placeholder value. The keys are being merged
-		// into stringData (opposed to keeping both data and stringData) for two
-		// reasons:
-		// - To make it very obvious that the generated secrets have placeholder
-		//   values to anyone who happens to e.g. read the stdout form a kustomize
-		//   build.
-		// - To avoid needing to base64 encode said placeholder value. This would
-		//   make things less obvious which is counter to the above point.
+		// Take the combined set of keys from both data and stringData, and
+		// merge them into stringData with a placeholder value. The keys are
+		// being merged into stringData (opposed to keeping both data and
+		// stringData) for two reasons:
+		// - To make it very obvious that the generated secrets have
+		//   placeholder values to anyone who happens to e.g. read the stdout
+		//   form a kustomize build.
+		// - To avoid needing to base64 encode said placeholder value. This
+		//   would make things less obvious and is counter to the above point.
+		// In the event that the original secret value was an empty string,
+		// then preserve that empty string instead of using the placeholder
+		// value. This is already viewable in the encrypted secret and assists
+		// in understanding the overall configuration.
 		if secret.StringData == nil {
 			secret.StringData = make(map[string]string)
 		}
-		for key := range secret.StringData {
-			secret.StringData[key] = "KSOPS_DRY_RUN_PLACEHOLDER"
+		for key, value := range secret.StringData {
+			switch value {
+			case "": // Preserve the value if it is an empty string.
+				secret.StringData[key] = ""
+			default:
+				secret.StringData[key] = "KSOPS_DRY_RUN_PLACEHOLDER"
+			}
 		}
-		for key := range secret.Data {
-			secret.StringData[key] = "KSOPS_DRY_RUN_PLACEHOLDER"
+		for key, value := range secret.Data {
+			switch value {
+			case "": // Preserve the value if it is an empty string.
+				secret.StringData[key] = ""
+			default:
+				secret.StringData[key] = "KSOPS_DRY_RUN_PLACEHOLDER"
+			}
 		}
 		secret.Data = nil
 
