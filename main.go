@@ -56,12 +56,19 @@ func main() {
 func mainCmd() error {
 	// If the KSOPS_DRY_RUN environment variable exists, regardless of if it
 	// even has an associated value, then exec the original ksops plugin. In
-	// this case the KSOPS_PATH environment variable must exist and point to
-	// said original ksops plugin.
+	// this case the KSOPS_PATH environment variable is used point to said
+	// original ksops plugin, but defaults to "_ksops" if not specified.
 	if _, found := os.LookupEnv("KSOPS_DRY_RUN"); !found {
 		ksopsPath := os.Getenv("KSOPS_PATH")
 		if ksopsPath == "" {
-			return fmt.Errorf("required environment variable KSOPS_PATH was not found")
+			// Get the path of the currently running (ksops-dry-run) plugin.
+			currentExecutable, err := os.Executable()
+			if err != nil {
+				return err
+			}
+
+			// Derive the name of the original (renamed) ksops plugin.
+			ksopsPath = filepath.Join(filepath.Dir(currentExecutable), "_ksops")
 		}
 
 		// Exec the original ksops plugin. If successful, this function call
