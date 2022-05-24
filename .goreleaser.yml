@@ -22,6 +22,7 @@ builds:
     ldflags:
       - -s -w
       - -buildid=
+      - -X main.version={{ .Tag }}
 
     env:
       - CGO_ENABLED=0

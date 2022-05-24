@@ -46,6 +46,10 @@ type ksopsGeneratorConfig struct {
 	Files  []string `yaml:"files"`
 }
 
+// version is used to hold the version string. Is replaced at go build time
+// with -ldflags.
+var version = "development"
+
 func main() {
 	if err := mainCmd(); err != nil {
 		fmt.Fprintln(os.Stderr, "ksops-dry-run:", err)
@@ -54,6 +58,13 @@ func main() {
 }
 
 func mainCmd() error {
+	// Print version information and exit.
+	if len(os.Args) >= 2 && os.Args[1] == "--version" {
+		fmt.Fprintln(os.Stderr, "joshdk/ksops-dry-run version", version)
+
+		return nil
+	}
+
 	// If the KSOPS_DRY_RUN environment variable exists, regardless of if it
 	// even has an associated value, then exec the original ksops plugin. In
 	// this case the KSOPS_PATH environment variable is used point to said
