@@ -68,18 +68,20 @@ func mainCmd() error {
 	// If the KSOPS_DRY_RUN environment variable exists, regardless of if it
 	// even has an associated value, then exec the original ksops plugin. In
 	// this case the KSOPS_PATH environment variable is used point to said
-	// original ksops plugin, but defaults to "_ksops" if not specified.
+	// original ksops plugin, but defaults to
+	// ${XDG_CONFIG_HOME}/kustomize/plugin/viaduct.ai/v1/ksops/_ksops if empty.
 	if _, found := os.LookupEnv("KSOPS_DRY_RUN"); !found {
 		ksopsPath := os.Getenv("KSOPS_PATH")
 		if ksopsPath == "" {
-			// Get the path of the currently running (ksops-dry-run) plugin.
-			currentExecutable, err := os.Executable()
-			if err != nil {
-				return err
+			// A KSOPS_PATH value was not given, so assume that the original
+			// ksops plugin was renamed to _ksops.
+			xdgConfigHome := os.Getenv("XDG_CONFIG_HOME")
+			if xdgConfigHome == "" {
+				return fmt.Errorf("required environment variable XDG_CONFIG_HOME was not found")
 			}
 
 			// Derive the name of the original (renamed) ksops plugin.
-			ksopsPath = filepath.Join(filepath.Dir(currentExecutable), "_ksops")
+			ksopsPath = filepath.Join(xdgConfigHome, "kustomize/plugin/viaduct.ai/v1/ksops/_ksops")
 		}
 
 		// Exec the original ksops plugin. If successful, this function call
