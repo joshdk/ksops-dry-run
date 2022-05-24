@@ -6,6 +6,8 @@
 
 ## Motivations
 
+> ⚠️ This repository is intended to be deprecated if something like [mozilla/sops #1015](https://github.com/mozilla/sops/issues/1015) is ever implemented.
+
 The [ksops](https://github.com/viaduct-ai/kustomize-sops) plugin is fantastic for managing encrypted secret resources as part of a Kustomize application.
 One specific limitation is the inability to run `kustomize build` against any application that contains secrets that you do not have access to.
 Since you do not have sufficient access to decrypt those secrets, the ksops plugin fails, and by extension so does the entire `kustomize build` invocation.
