@@ -31,23 +31,24 @@ This way you can run `kustomize build` and produce resource manifests for your a
 
 ## Installation
 
-To install, we need to rename the original `ksops` plugin to `_ksops`, download the `ksops-dry-run` plugin, and then rename `ksops-dry-run` to take the place of the original `ksops` plugin.
+To install, we need to rename the original `ksops` plugin to `_ksops`, download the `ksops-dry-run` plugin, and then symlink `ksops-dry-run` to take the place of the original `ksops` plugin.
 
 ```shell
 $ cd ${XDG_CONFIG_HOME}/kustomize/plugin/viaduct.ai/v1/ksops/
 $ mv ksops _ksops
-$ wget https://github.com/joshdk/ksops-dry-run/releases/download/v0.1.0/ksops-dry-run-amd64.tar.gz
-$ tar -xf ksops-dry-run-amd64.tar.gz
-$ cp ksops-dry-run ksops
+$ wget https://github.com/joshdk/ksops-dry-run/releases/download/v0.2.0/ksops-dry-run-linux-amd64.tar.gz
+$ tar -xf ksops-dry-run-linux-amd64.tar.gz
+$ ln -s ksops-dry-run ksops
 ```
 
 ### Uninstallation
 
-To uninstall, we need to delete the `ksops-dry-run` plugin (which is currently named `ksops`), and finally restore the original `ksops` plugin. 
+To uninstall, we need to delete the `ksops-dry-run` plugin (which is currently symlinked to `ksops`), and finally restore the original `ksops` plugin.
 
 ```shell
 $ cd ${XDG_CONFIG_HOME}/kustomize/plugin/viaduct.ai/v1/ksops/
-$ rm ksops
+$ unlink ksops
+$ rm ksops-dry-run
 $ mv _ksops ksops
 ```
 
