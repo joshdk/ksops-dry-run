@@ -60,28 +60,28 @@ func main() {
 func mainCmd() error {
 	// Print version information and exit.
 	if len(os.Args) >= 2 && os.Args[1] == "--version" {
-		fmt.Fprintln(os.Stderr, "joshdk/ksops-dry-run version", version)
+		fmt.Fprintln(os.Stderr, "github.com/joshdk/ksops-dry-run version", version)
 
 		return nil
 	}
 
 	// If the KSOPS_DRY_RUN environment variable exists, regardless of if it
-	// even has an associated value, then exec the original ksops plugin. In
-	// this case the KSOPS_PATH environment variable is used point to said
-	// original ksops plugin, but defaults to
-	// ${XDG_CONFIG_HOME}/kustomize/plugin/viaduct.ai/v1/ksops/_ksops if empty.
+	// even has an associated value, then exec the original ksops plugin.
+	//
+	// The original ksops plugin is located in the following ways
+	// - Using ${KSOPS_PATH} verbatim.
+	// - Using ${XDG_CONFIG_HOME}/kustomize/plugin/viaduct.ai/v1/ksops/_ksops.
+	// - Using ${HOME}/.config/kustomize/plugin/viaduct.ai/v1/ksops/_ksops.
 	if _, found := os.LookupEnv("KSOPS_DRY_RUN"); !found {
-		ksopsPath := os.Getenv("KSOPS_PATH")
-		if ksopsPath == "" {
-			// A KSOPS_PATH value was not given, so assume that the original
-			// ksops plugin was renamed to _ksops.
-			xdgConfigHome := os.Getenv("XDG_CONFIG_HOME")
-			if xdgConfigHome == "" {
-				return fmt.Errorf("required environment variable XDG_CONFIG_HOME was not found")
-			}
-
-			// Derive the name of the original (renamed) ksops plugin.
-			ksopsPath = filepath.Join(xdgConfigHome, "kustomize/plugin/viaduct.ai/v1/ksops/_ksops")
+		var ksopsPath string
+		if path := os.Getenv("KSOPS_PATH"); path != "" {
+			ksopsPath = path
+		} else if path := os.Getenv("XDG_CONFIG_HOME"); path != "" {
+			ksopsPath = filepath.Join(path, "kustomize/plugin/viaduct.ai/v1/ksops/_ksops")
+		} else if path := os.Getenv("HOME"); path != "" {
+			ksopsPath = filepath.Join(path, ".config", "kustomize/plugin/viaduct.ai/v1/ksops/_ksops")
+		} else {
+			return fmt.Errorf("unable to resolve location of original ksops plugin")
 		}
 
 		// Exec the original ksops plugin. If successful, this function call
@@ -197,7 +197,7 @@ func parseKsopsEncryptedSecrets(filename string) ([]secret, error) {
 		// stringData) for two reasons:
 		// - To make it very obvious that the generated secrets have
 		//   placeholder values to anyone who happens to e.g. read the stdout
-		//   form a kustomize build.
+		//   from kustomize build.
 		// - To avoid needing to base64 encode said placeholder value. This
 		//   would make things less obvious and is counter to the above point.
 		// In the event that the original secret value was an empty string,
